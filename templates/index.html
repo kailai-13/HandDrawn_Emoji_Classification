@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw an Emoji</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            border: 2px solid black;
+            background-color: white;
+            touch-action: none; /* Prevents touch scrolling while drawing */
+            max-width: 100%;
+            height: auto;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .clear-btn {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .predict-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 20px;
+        }
+
+        /* Responsive canvas */
+        @media (max-width: 600px) {
+            canvas {
+                width: 90%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Draw an Emoji and Predict</h1>
+    <div class="canvas-container">
+        <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+    <div class="buttons">
+        <button class="clear-btn" onclick="clearCanvas()">Clear</button>
+        <button class="predict-btn" onclick="predictEmoji()">Predict</button>
+    </div>
+    <h2 id="result">Prediction: </h2>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+
+        // Resize canvas dynamically
+        function resizeCanvas() {
+            const ratio = canvas.width / canvas.height;
+            if (window.innerWidth < 500) {
+                canvas.width = window.innerWidth * 0.9;
+                canvas.height = canvas.width / ratio;
+            } else {
+                canvas.width = 400;
+                canvas.height = 400;
+            }
+        }
+
+        function startDrawing(event) {
+            event.preventDefault();
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(getX(event), getY(event));
+        }
+
+        function stopDrawing(event) {
+            event.preventDefault();
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(event) {
+            event.preventDefault();
+            if (!drawing) return;
+            ctx.lineWidth = 8;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = "black";
+            ctx.lineTo(getX(event), getY(event));
+            ctx.stroke();
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function predictEmoji() {
+            const image = canvas.toDataURL("image/png");  
+            fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: image })
+            })
+            .then(response => response.json())
+            .then(data => document.getElementById("result").innerText = "Prediction: " + data.emoji)
+            .catch(error => console.error("Error:", error));
+        }
+
+        // Get correct X, Y positions for mouse & touch events
+        function getX(event) {
+            const rect = canvas.getBoundingClientRect();
+            return (event.clientX || event.touches[0].clientX) - rect.left;
+        }
+
+        function getY(event) {
+            const rect = canvas.getBoundingClientRect();
+            return (event.clientY || event.touches[0].clientY) - rect.top;
+        }
+
+        // Prevent scrolling while touching the canvas
+        canvas.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
+
+        // Mouse & touch event listeners
+        canvas.addEventListener("mousedown", startDrawing);
+        canvas.addEventListener("mouseup", stopDrawing);
+        canvas.addEventListener("mousemove", draw);
+
+        canvas.addEventListener("touchstart", startDrawing);
+        canvas.addEventListener("touchend", stopDrawing);
+        canvas.addEventListener("touchmove", draw);
+
+        // Resize canvas on load and window resize
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+</html>
