@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import cv2
 import base64
 import io
 from flask import Flask, request, jsonify, render_template
@@ -11,11 +10,11 @@ model = tf.keras.models.load_model("emoji_recognition_cnn.h5")
 
 # Emoji class names (must match training labels)
 emoji_names = [
-    "beaming-face", "cloud", "face-spiral", "flushed-face",
-    "grimacing-face", "grinning-face", "grinning-squinting",
-    "heart", "pouting-face", "raised-eyebrow", "relieved-face",
-    "savoring-food", "smiling-heart", "smiling-horns",
-    "smiling-sunglasses", "smiling-tear", "smirking-face", "tears-of-joy"
+    "beaming-face -😁 ", "cloud - ☁️", "face-spiral -😵‍💫", "flushed-face - 😳",
+    "grimacing-face - 😬", "grinning-face -😄", "grinning-squinting -😆",
+    "heart - ❤️", "pouting-face -😡", "raised-eyebrow -🤨", "relieved-face -😌",
+    "savoring-food -😋 ", "smiling-heart -😍", "smiling-horns",
+    "smiling-sunglasses -😎", "smiling-tear -🥲", "smirking-face -😏", "tears-of-joy -😂"
 ]
 
 # Initialize Flask app
@@ -34,9 +33,9 @@ def predict():
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
 
         # Convert to numpy array & preprocess
-        image = image.resize((64, 64))  # Resize to match model input size
-        image = np.array(image) / 255.0  # Normalize
-        image = np.expand_dims(image, axis=0)  # Add batch dimension
+        image = image.resize((64, 64)) 
+        image = np.array(image) / 255.0  
+        image = np.expand_dims(image, axis=0)  
 
         # Predict using model
         predictions = model.predict(image)
