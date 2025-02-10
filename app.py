@@ -10,11 +10,11 @@ model = tf.keras.models.load_model("emoji_recognition_cnn.h5")
 
 # Emoji class names (must match training labels)
 emoji_names = [
-    "beaming-face -😁 ", "cloud - ☁️", "face-spiral -😵‍💫", "flushed-face - 😳",
-    "grimacing-face - 😬", "grinning-face -😄", "grinning-squinting -😆",
-    "heart - ❤️", "pouting-face -😡", "raised-eyebrow -🤨", "relieved-face -😌",
-    "savoring-food -😋 ", "smiling-heart -😍", "smiling-horns",
-    "smiling-sunglasses -😎", "smiling-tear -🥲", "smirking-face -😏", "tears-of-joy -😂"
+    "beaming-face", "cloud", "face-spiral", "flushed-face",
+    "grimacing-face", "grinning-face", "grinning-squinting",
+    "heart", "pouting-face", "raised-eyebrow", "relieved-face",
+    "savoring-food", "smiling-heart", "smiling-horns",
+    "smiling-sunglasses", "smiling-tear", "smirking-face", "tears-of-joy"
 ]
 
 # Initialize Flask app
