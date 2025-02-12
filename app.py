@@ -33,9 +33,9 @@ def predict():
         image = Image.open(io.BytesIO(image_data)).convert("RGBA")
 
         # Convert to numpy array & preprocess
-        image = image.resize((64, 64)) 
-        image = np.array(image) / 255.0  
-        image = np.expand_dims(image, axis=0)  
+        image = image.resize((64, 64))  # Resize to match model input size
+        image = np.array(image) / 255.0  # Normalize
+        image = np.expand_dims(image, axis=0)  # Add batch dimension
 
         # Predict using model
         predictions = model.predict(image)
