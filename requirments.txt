@@ -1,0 +1,5 @@
+Flask
+numpy
+tensorflow
+p-base64
+Pillow
