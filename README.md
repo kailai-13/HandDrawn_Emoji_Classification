@@ -17,8 +17,8 @@ Follow these steps to set up and run the project:
 
 ### 1. Clone the Repository
 ```sh
-git clone https://github.com/your-repo/emoji-recognition-flask.git
-cd emoji-recognition-flask
+git clone https://github.com/kailai-13/HandDrawn_Emoji_Classification
+cd HandDrawn_Emoji_Classification
 ```
 
 ### 2. Create a Virtual Environment (Optional but Recommended)
