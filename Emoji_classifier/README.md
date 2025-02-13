@@ -74,4 +74,3 @@ See `requirements.txt` for the list of dependencies.
 
 ## License
 This project is open-source and can be modified and distributed freely.
-
