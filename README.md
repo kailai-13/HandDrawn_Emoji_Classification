@@ -1,69 +1,78 @@
-# Emoji Classifier using Google QuickDraw Dataset
+# Emoji Recognition Flask App
 
-## Overview
-This project is an emoji classifier trained using the [Google QuickDraw dataset](https://quickdraw.withgoogle.com/data). The model can recognize hand-drawn emojis and classify them into different categories based on the dataset.
+## Description
+This is a Flask-based web application that classifies emojis using a Convolutional Neural Network (CNN) model built with TensorFlow/Keras. The app allows users to upload an image of an emoji, processes it, and predicts the corresponding emoji label.
 
 ## Features
-- Uses the Google QuickDraw dataset for training.
-- Implements deep learning models such as CNNs for classification.
-- Supports real-time emoji recognition from hand-drawn sketches.
-- Trained using TensorFlow/Keras or PyTorch.
-- Interactive UI using a web or mobile app for real-time predictions.
+- Upload an emoji image for recognition.
+- Uses a trained CNN model (`emoji_recognition_cnn.h5`) to predict the emoji.
+- Returns the corresponding emoji label in JSON format.
+- Built with Flask for easy web deployment.
 
-## Dataset
-The dataset consists of hand-drawn sketches of emojis collected through Google's QuickDraw initiative. It contains thousands of samples for each emoji category in `.ndjson` format.
+## Prerequisites
+Ensure you have Python installed (recommended version: Python 3.8+).
 
-### Dataset Preprocessing
-1. Convert `.ndjson` files into images or NumPy arrays.
-2. Normalize and reshape data for input into the neural network.
-3. Split data into training and validation sets.
+## Installation & Setup
+Follow these steps to set up and run the project:
 
-## Model Architecture
-- **Convolutional Neural Network (CNN)** with multiple layers:
-  - Convolutional layers for feature extraction
-  - Pooling layers for dimensionality reduction
-  - Fully connected layers for classification
-- Uses ReLU activation and Softmax for output classification.
+### 1. Clone the Repository
+```sh
+git clone https://github.com/kailai-13/HandDrawn_Emoji_Classification
+cd HandDrawn_Emoji_Classification
+cd emoji_classifier
+```
 
-## Installation
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/kailai-13/emoji-classifier.git
-   cd emoji-classifier
-   ```
-2. Install dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-3. Download the QuickDraw dataset:
-   ```sh
-   python download_dataset.py
-   ```
-4. Train the model:
-   ```sh
-   python train.py
-   ```
-5. Run the classifier:
-   ```sh
-   python app.py
-   ```
+### 2. Create a Virtual Environment (Optional but Recommended)
+```sh
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
 
-## Usage
-- **Training**: Run `train.py` to train the model on the dataset.
-- **Inference**: Use `predict.py` to classify a given hand-drawn emoji.
-- **Web App**: Start a Flask or Streamlit app with `app.py` for a user-friendly interface.
+### 3. Install Dependencies
+```sh
+pip install -r requirements.txt
+```
 
-## Example Predictions
-Upload or draw an emoji, and the classifier will predict the category.
+### 4. Place the Model File
+Ensure that the `emoji_recognition_cnn.h5` model file is placed in the project directory.
 
-## Future Enhancements
-- Improve model accuracy with more advanced architectures like ResNet.
-- Deploy the model as a web or mobile application.
-- Add support for real-time sketch recognition.
+### 5. Run the Flask Application
+```sh
+python app.py
+```
 
-## Contributing
-Feel free to submit issues or pull requests to improve the project.
+### 6. Access the Web Interface
+Once the server is running, open your browser and go to:
+```
+http://127.0.0.1:5000/
+```
+
+### 7. API Endpoint Usage
+#### **POST /predict**
+- Accepts a JSON payload with a base64-encoded image.
+- Returns the predicted emoji.
+
+Example Request (Using Python):
+```python
+import requests
+import base64
+
+# Read and encode image
+with open("emoji.png", "rb") as image_file:
+    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+
+data = {"image": f"data:image/png;base64,{encoded_string}"}
+response = requests.post("http://127.0.0.1:5000/predict", json=data)
+print(response.json())
+```
+
+## Dependencies
+See `requirements.txt` for the list of dependencies.
+
+## Notes
+- Ensure the model file (`emoji_recognition_cnn.h5`) is correctly trained and matches the labels provided in the script.
+- Modify `emoji_names` in `app.py` if necessary to match the model's class labels.
 
 ## License
-This project is open-source and available under the MIT License.
+This project is open-source and can be modified and distributed freely.
 
