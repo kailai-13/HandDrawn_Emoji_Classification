@@ -38,11 +38,13 @@ def predict():
         image = np.expand_dims(image, axis=0)  # Add batch dimension
 
         # Predict using model
-        predictions = model.predict(image)
-        predicted_class = np.argmax(predictions)
-        predicted_emoji = emoji_names[predicted_class]
+        predictions = model.predict(image)[0]  # Get prediction array
+        top_k = 3  # Number of top predictions to return
+        top_indices = np.argsort(predictions)[-top_k:][::-1]
+        top_emojis = [emoji_names[i] for i in top_indices]
+        top_probabilities = [predictions[i] * 100 for i in top_indices]  # Convert to percentage
 
-        return jsonify({"emoji": predicted_emoji})
+        return jsonify({"emojis": top_emojis, "probabilities": top_probabilities})
 
     except Exception as e:
         return jsonify({"error": str(e)})
