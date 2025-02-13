@@ -20,13 +20,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
         }
 
+     
+        
+        /* Dark Mode Background */
         body.dark-mode {
-            background-color: #121212;
-            color: #ffffff;
+            background: url("Untitled-1.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #121212; /* Fallback for dark mode */
+            color: white;
         }
+        
 
         h1 {
             color: inherit;
@@ -139,9 +147,10 @@
             right: 20px; /* Slide in */
             opacity: 1; /* Fade in */
         }
-        
-
-     
+        body.dark-mode .suggestions {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
         /* Responsive Design */
         @media (max-width: 600px) {
