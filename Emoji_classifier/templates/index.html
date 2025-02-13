@@ -4,25 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draw an Emoji</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* General Styles */
         body {
             text-align: center;
             font-family: 'Arial', sans-serif;
-            background:  url("https://img.freepik.com/free-vector/hand-drawn-world-emoji-day-background-with-emoticons_23-2149418957.jpg?t=st=1739340371~exp=1739343971~hmac=5dbd77f799c293c67bf61bd7c32f6e9b8de423bada12b661dc33f5491278d312&w=996"); /* Add background image */
-            background-size: cover; /* Make the image cover the screen */
-            background-position: center; /* Center the image */
-            background-repeat: no-repeat; /* Prevent repeating */
+            background: url("https://img.freepik.com/free-vector/hand-drawn-world-emoji-day-background-with-emoticons_23-2149418957.jpg?t=st=1739340371~exp=1739343971~hmac=5dbd77f799c293c67bf61bd7c32f6e9b8de423bada12b661dc33f5491278d312&w=996");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
+        }
+
+     
+        
+        /* Dark Mode Background */
+        body.dark-mode {
+            background: url("Untitled-1.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #121212; /* Fallback for dark mode */
+            color: white;
         }
         
+
         h1 {
-            color: #333;
+            color: inherit;
             font-size: 2.5rem;
             margin-bottom: 20px;
         }
@@ -36,6 +51,12 @@
             padding: 30px;
             max-width: 90%;
             width: 500px;
+            transition: background 0.3s;
+        }
+
+        body.dark-mode .container {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .canvas-container {
@@ -74,7 +95,7 @@
             transition: 0.3s;
             background: rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            color: #333;
+            color: inherit;
             backdrop-filter: blur(5px);
         }
 
@@ -94,10 +115,41 @@
             border: 1px solid rgba(76, 175, 80, 0.5);
         }
 
+        .dark-mode-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
         h2 {
-            color: #333;
+            color: inherit;
             margin-top: 20px;
             font-size: 1.5rem;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 50%;
+            right: -300px; /* Start off-screen */
+            transform: translateY(-50%);
+            width: 250px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            transition: right 0.5s ease-in-out, opacity 0.5s;
+            opacity: 0; /* Initially hidden */
+        }
+        
+        .suggestions.show {
+            right: 20px; /* Slide in */
+            opacity: 1; /* Fade in */
+        }
+        body.dark-mode .suggestions {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Responsive Design */
@@ -131,15 +183,28 @@
         <div class="buttons">
             <button class="clear-btn" onclick="clearCanvas()">Clear</button>
             <button class="predict-btn" onclick="predictEmoji()">Predict</button>
+            <button onclick="undo()">Undo</button>
+          
+            <button id="erase-btn" onclick="toggleErase()">Eraser: OFF</button>
+            <button onclick="downloadImage()">Download</button>
+            <button onclick="copyToClipboard()">Copy Emoji</button>
         </div>
+        
         <h2 id="result">Prediction: </h2>
+        
     </div>
+    <div class="suggestions" id="suggestions"></div>
+    <button class="dark-mode-btn" onclick="toggleDarkMode()">🌙</button>
 
     <script>
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         let drawing = false;
-
+        let eraseMode = false;
+        let drawingHistory = [];
+        let historyIndex = -1;
+        const eraseBtn = document.getElementById("erase-btn"); // Reference to erase button
+        
         // Resize canvas dynamically
         function resizeCanvas() {
             const ratio = canvas.width / canvas.height;
@@ -151,72 +216,158 @@
                 canvas.height = 400;
             }
         }
-
+        
+        // Start drawing
         function startDrawing(event) {
             event.preventDefault();
             drawing = true;
             ctx.beginPath();
             ctx.moveTo(getX(event), getY(event));
+            saveState();
         }
-
+        
+        // Stop drawing
         function stopDrawing(event) {
             event.preventDefault();
             drawing = false;
             ctx.beginPath();
         }
-
+        
+        // Draw or erase
         function draw(event) {
             event.preventDefault();
             if (!drawing) return;
-            ctx.lineWidth = 8;
+        
+            ctx.lineWidth = eraseMode ? 20 : 8;
             ctx.lineCap = "round";
-            ctx.strokeStyle = "black";
+            ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // Proper erasing
+        
             ctx.lineTo(getX(event), getY(event));
             ctx.stroke();
         }
-
+        
+        // Toggle erase mode with indicator
+        function toggleErase() {
+            eraseMode = !eraseMode;
+            ctx.globalCompositeOperation = eraseMode ? "destination-out" : "source-over"; // Enable erase mode
+            eraseBtn.textContent = `Eraser: ${eraseMode ? "ON" : "OFF"}`;
+        }
+        
+        // Clear canvas
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState();
         }
-
+        
+        // Save state for undo/redo
+        function saveState() {
+            if (historyIndex < drawingHistory.length - 1) {
+                drawingHistory = drawingHistory.slice(0, historyIndex + 1);
+            }
+            drawingHistory.push(canvas.toDataURL());
+            historyIndex++;
+        }
+        
+        // Undo last action
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreCanvas(historyIndex);
+            }
+        }
+        
+     
+        
+        // Restore previous canvas state
+        function restoreCanvas(index) {
+            const img = new Image();
+            img.src = drawingHistory[index];
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+        }
+        
+        // Predict emoji and show top 3 results
         function predictEmoji() {
-            const image = canvas.toDataURL("image/png");  
+            const image = canvas.toDataURL("image/png");
             fetch("/predict", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ image: image })
             })
             .then(response => response.json())
-            .then(data => document.getElementById("result").innerText = "Prediction: " + data.emoji)
+            .then(data => {
+                const predictionsDiv = document.getElementById("suggestions");
+                const resultDiv = document.getElementById("result");
+        
+                // Get the most predicted emoji
+                const topEmoji = data.emojis[0];
+                const topProbability = data.probabilities[0].toFixed(2);
+        
+                // Update the result heading
+                resultDiv.innerHTML = `Prediction: ${topEmoji} (${topProbability}%)`;
+        
+                // Populate the predictions container
+                predictionsDiv.innerHTML = "<h2>Top Predictions:</h2>";
+                data.emojis.forEach((emoji, index) => {
+                    const probability = data.probabilities[index].toFixed(2);
+                    predictionsDiv.innerHTML += `<p>${index + 1}. ${emoji} - <strong>${probability}%</strong></p>`;
+                });
+        
+                // Show the suggestions with animation
+                predictionsDiv.classList.add("show");
+            })
             .catch(error => console.error("Error:", error));
         }
-
+        
+        
+        // Download canvas as image
+        function downloadImage() {
+            const link = document.createElement("a");
+            link.download = "emoji.png";
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Copy prediction to clipboard
+        function copyToClipboard() {
+            const prediction = document.getElementById("result").innerText.replace("Prediction: ", "");
+            navigator.clipboard.writeText(prediction).then(() => alert("Copied to clipboard!"));
+        }
+        
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+        
         // Get correct X, Y positions for mouse & touch events
         function getX(event) {
             const rect = canvas.getBoundingClientRect();
             return (event.clientX || event.touches[0].clientX) - rect.left;
         }
-
+        
         function getY(event) {
             const rect = canvas.getBoundingClientRect();
             return (event.clientY || event.touches[0].clientY) - rect.top;
         }
-
+        
         // Prevent scrolling while touching the canvas
         canvas.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
-
+        
         // Mouse & touch event listeners
         canvas.addEventListener("mousedown", startDrawing);
         canvas.addEventListener("mouseup", stopDrawing);
         canvas.addEventListener("mousemove", draw);
-
+        
         canvas.addEventListener("touchstart", startDrawing);
         canvas.addEventListener("touchend", stopDrawing);
         canvas.addEventListener("touchmove", draw);
-
+        
         // Resize canvas on load and window resize
         window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
+        
     </script>
 </body>
 </html>
