@@ -73,6 +73,4 @@ See `requirements.txt` for the list of dependencies.
 - Ensure the model file (`emoji_recognition_cnn.h5`) is correctly trained and matches the labels provided in the script.
 - Modify `emoji_names` in `app.py` if necessary to match the model's class labels.
 
-## License
-This project is open-source and can be modified and distributed freely.
 
