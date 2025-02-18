@@ -3,7 +3,7 @@
 ## Description
 This is a Flask-based web application that classifies emojis using a Convolutional Neural Network (CNN) model built with TensorFlow/Keras. The app allows users to upload an image of an emoji, processes it, and predicts the corresponding emoji label.
 
-## Features
+## Features  
 - Upload an emoji image for recognition.
 - Uses a trained CNN model (`emoji_recognition_cnn.h5`) to predict the emoji.
 - Returns the corresponding emoji label in JSON format.
