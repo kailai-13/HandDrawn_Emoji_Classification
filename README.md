@@ -5,7 +5,7 @@ This is a Flask-based web application that classifies emojis using a Convolution
 
 ## Features  
 - Upload an emoji image for recognition.
-- Uses a trained CNN model (`emoji_recognition_cnn.h5`) to predict the emoji.
+- Uses a trained CNN model  (`emoji_recognition_cnn.h5`) to predict the emoji.
 - Returns the corresponding emoji label in JSON format.
 - Built with Flask for easy web deployment.
 
